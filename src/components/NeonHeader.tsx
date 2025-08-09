@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { useSolBalance } from "@/solana/useSolBalance";
 
 const LOGO_SRC = "/lovable-uploads/c7fb3044-11d4-47ce-9a1b-e194dd45b8be.png";
 
 export const NeonHeader = () => {
-  const [connected, setConnected] = useState(false);
+  const { balance, publicKey } = useSolBalance();
+
+  const short = (k?: string) => (k ? `${k.slice(0, 4)}…${k.slice(-4)}` : "");
 
   return (
     <header className="w-full sticky top-0 z-40 backdrop-blur-md">
@@ -25,16 +27,13 @@ export const NeonHeader = () => {
           <a href="#faq" className="story-link">FAQ</a>
         </div>
 
-        <div className="flex items-center gap-3">
-          {connected ? (
-            <Button variant="neon" size="sm" onClick={() => setConnected(false)}>
-              Connected • DEMO...WALLET
-            </Button>
-          ) : (
-            <Button variant="neon" size="sm" onClick={() => setConnected(true)}>
-              Connect Wallet
-            </Button>
+        <div className="flex items-center gap-4">
+          {publicKey && (
+            <div className="text-xs text-muted-foreground hidden sm:block">
+              {short(publicKey.toBase58())} • {balance?.toFixed(2) ?? "-"} SOL
+            </div>
           )}
+          <WalletMultiButton className="btn-glow" />
         </div>
       </nav>
     </header>
