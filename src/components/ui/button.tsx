@@ -18,6 +18,10 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        neon:
+          "btn-glow shine-mask bg-gradient-to-r from-[hsl(var(--glow-magenta))] via-[hsl(var(--primary))] to-[hsl(var(--glow-cyan))] text-primary-foreground hover:opacity-95",
+        hero:
+          "btn-glow shine-mask bg-gradient-to-r from-[hsl(var(--glow-magenta))] via-[hsl(var(--primary))] to-[hsl(var(--glow-cyan))] text-primary-foreground tracking-wide uppercase",
       },
       size: {
         default: "h-10 px-4 py-2",

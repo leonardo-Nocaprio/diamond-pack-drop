@@ -7,90 +7,96 @@ All colors MUST be HSL.
 */
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+:root {
+    --background: 248 70% 6%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 248 60% 8%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 248 60% 8%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* Brand & Neon */
+    --primary: 270 95% 62%; /* Neon violet */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 215 30% 18%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 230 30% 16%;
+    --muted-foreground: 215 20% 72%;
 
-    --accent: 210 40% 96.1%;
+    --accent: 190 95% 54%; /* Neon cyan */
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 240 22% 20%;
+    --input: 240 22% 20%;
+    --ring: 270 95% 62%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Sidebar (if used) */
+    --sidebar-background: 248 70% 6%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 270 95% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 30% 18%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 240 22% 20%;
+    --sidebar-ring: 270 95% 62%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Custom tokens */
+    --glow-cyan: 190 95% 54%;
+    --glow-magenta: 312 92% 60%;
+    --glow-purple: 270 95% 62%;
+    --hero-from: 255 70% 10%;
+    --hero-to: 248 70% 6%;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --font-sans: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    --font-display: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
+.dark {
+    --background: 248 70% 6%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 248 60% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 248 60% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 270 95% 62%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 215 30% 18%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 230 30% 16%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 190 95% 54%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
+    --border: 240 22% 20%;
+    --input: 240 22% 20%;
+    --ring: 270 95% 62%;
+
+    --sidebar-background: 248 70% 6%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 270 95% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 215 30% 18%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 240 22% 20%;
+    --sidebar-ring: 270 95% 62%;
   }
 }
 
@@ -101,5 +107,80 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    background-image: linear-gradient(180deg, hsl(var(--hero-from)), hsl(var(--hero-to)));
+    min-height: 100vh;
   }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+  }
+}
+
+@layer components {
+  .neon-border {
+    position: relative;
+    border: 1px solid transparent;
+    background:
+      linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+      linear-gradient(135deg, hsl(var(--glow-magenta)), hsl(var(--glow-cyan)), hsl(var(--glow-purple))) border-box;
+    box-shadow: 0 0 30px hsl(var(--glow-purple) / 0.35), 0 0 60px hsl(var(--glow-cyan) / 0.25);
+  }
+  .neon-card {
+    @apply rounded-2xl backdrop-blur-md;
+    background: linear-gradient(180deg, hsl(var(--popover) / 0.6), hsl(var(--popover) / 0.2));
+  }
+  .btn-glow {
+    box-shadow: 0 0 16px hsl(var(--glow-cyan) / 0.6), 0 0 32px hsl(var(--glow-magenta) / 0.4);
+  }
+  .hover-tilt {
+    transition: transform 200ms ease;
+  }
+  .hover-tilt:hover {
+    transform: perspective(800px) rotateX(2deg) rotateY(-2deg) translateY(-2px);
+  }
+  .shine-mask {
+    position: relative;
+    overflow: hidden;
+  }
+  .shine-mask::after {
+    content: "";
+    position: absolute;
+    inset: -150% -50% auto -50%;
+    background: linear-gradient(120deg, transparent, hsl(var(--accent) / 0.2), transparent);
+    transform: rotate(15deg);
+    animation: shine 3s linear infinite;
+  }
+}
+
+@keyframes shine {
+  from { transform: translateX(-100%) rotate(15deg); }
+  to { transform: translateX(100%) rotate(15deg); }
+}
+
+@layer components {
+  .story-link {
+    position: relative;
+    display: inline-block;
+  }
+  .story-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 2px;
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    background: hsl(var(--accent));
+    transition: transform 300ms ease;
+  }
+  .story-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
+  .hover-scale { transition: transform 200ms ease; }
+  .hover-scale:hover { transform: scale(1.05); }
+  .pulse { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
 }
