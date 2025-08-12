@@ -1,32 +1,21 @@
-# -------------------
-# Build Stage
-# -------------------
-FROM node:20 AS build
+# Use an official Node.js runtime as the base image
+FROM node:20-alpine
 
-# Create and set working directory
+# Set working directory
 WORKDIR /app
 
-# Copy package files first (better caching for deps)
+# Copy package.json and lock file first
 COPY package*.json ./
 
-# Install production dependencies
+# Install dependencies
 RUN npm install --production
 
 # Copy the rest of the application
 COPY . .
 
-# -------------------
-# Runtime Stage
-# -------------------
-FROM node:20 AS runtime
-
-WORKDIR /app
-
-# Copy only needed files from build stage
-COPY --from=build /app /app
-
-# Expose app port (change if not 3000)
+# Expose port (Railway will use this)
 EXPOSE 3000
 
-# Start the server
+# Start command
 CMD ["node", "server/index.js"]
+
