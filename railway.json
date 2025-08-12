@@ -7,12 +7,13 @@
           "cmds": ["npm install"]
         },
         "build": {
-          "cmds": ["npm run build"]
+          "cmds": ["echo \"No build needed for backend\""]
         },
         "start": {
-          "cmds": ["npm start"]
+          "cmds": ["node server/index.js"]
         }
       }
     }
   }
 }
+
