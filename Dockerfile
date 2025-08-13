@@ -5,8 +5,6 @@ WORKDIR /app
 
 # Copy package.json and lock file
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install --production
 
 # Copy all files
@@ -17,4 +15,3 @@ EXPOSE 4000
 
 # Start the server at runtime
 CMD ["node", "server/index.js"]
-
