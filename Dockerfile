@@ -1,16 +1,20 @@
-# Use Node.js base
-FROM node:20-alpine
+# Use Node base image
+FROM node:18
 
 WORKDIR /app
 
-# Copy package.json and install
+# Copy package.json and lock file
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install --production
 
-# Copy everything else
+# Copy all files
 COPY . .
 
-EXPOSE 3000
+# Expose the port
+EXPOSE 4000
 
-# Start at runtime, not build time
+# Start the server at runtime
 CMD ["node", "server/index.js"]
+
