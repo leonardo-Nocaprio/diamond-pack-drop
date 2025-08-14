@@ -1,44 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import NeonHeader from "@/components/NeonHeader";
 import PackMintFrame from "@/components/PackMintFrame";
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { useWallet } from '@solana/wallet-adapter-react';
-
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { Transaction } from "@solana/web3.js";
 
 const LOGO_SRC = "/lovable-uploads/c7fb3044-11d4-47ce-9a1b-e194dd45b8be.png";
 
+// Use your Railway URL if set; otherwise same-origin (useful in Lovable dev)
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "";
+
+function b64ToUint8Array(b64: string) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
 const Index = () => {
   const wallet = useWallet();
+  const { connection } = useConnection();
   const [minting, setMinting] = useState(false);
 
-  const handleMint = async () => {
-    if (!wallet.connected) {
+  const handleMint = useCallback(async () => {
+    if (!wallet.connected || !wallet.publicKey) {
       alert("Please connect your wallet first.");
+      return;
+    }
+    if (!wallet.signTransaction) {
+      alert("Your wallet cannot sign transactions here. Please use Phantom or a wallet that supports `signTransaction`.");
       return;
     }
 
     setMinting(true);
-
     try {
-      const response = await fetch("/api/mint", {
+      // 1) Ask backend for a prepared mint transaction
+      const res = await fetch(`${API_BASE}/api/mint-tx`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userPublicKey: wallet.publicKey?.toBase58() }),
+        body: JSON.stringify({
+          buyer: wallet.publicKey.toBase58(),
+          quantity: 1, // change if you support multi-mint
+        }),
       });
 
-      const data = await response.json();
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to get mint transaction");
 
-      if (!response.ok) {
-        throw new Error(data.error || "Mint failed");
-      }
+      // 2) Decode tx and ask wallet to sign
+      const raw = b64ToUint8Array(json.transaction);
+      const tx = Transaction.from(raw);
+      const signed = await wallet.signTransaction(tx);
 
-      alert("Mint successful! Transaction: " + data.txSignature);
-    } catch (error: any) {
-      alert("Mint failed: " + error.message);
+      // 3) Send & confirm
+      const sig = await connection.sendRawTransaction(signed.serialize());
+      await connection.confirmTransaction(sig, "confirmed");
+
+      alert(`✅ Mint successful! Signature: ${sig}`);
+    } catch (err: any) {
+      console.error("Mint error:", err);
+      alert(`Mint failed: ${err?.message || String(err)}`);
     } finally {
       setMinting(false);
     }
-  };
+  }, [wallet, connection]);
 
   return (
     <div className="min-h-screen">
@@ -55,7 +80,7 @@ const Index = () => {
               Diamond Nutted Nation — Mint Solana NFT Packs
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8">
-              Rip open a neon pack and reveal 3 NFTs. Use them in our play‑to‑earn game to win SOL and other crypto.
+              Rip open a neon pack and reveal 3 NFTs. Use them in our play-to-earn game to win SOL and other crypto.
             </p>
 
             <button
@@ -66,10 +91,8 @@ const Index = () => {
               {minting ? "Minting..." : "Mint a Pack"}
             </button>
 
-            {/* Wallet Connect Button */}
             <WalletMultiButton className="mb-2" />
 
-            {/* Wallet Status */}
             {wallet.connected && (
               <p className="text-sm text-muted-foreground">
                 Connected wallet: {wallet.publicKey?.toBase58()}
@@ -84,7 +107,7 @@ const Index = () => {
           <article className="max-w-3xl mx-auto text-left space-y-4">
             <h2 className="text-2xl font-semibold">About Diamond Nutted Nation</h2>
             <p className="text-muted-foreground">
-              Diamond Nutted Nation is a neon‑charged collection designed for on‑chain utility. Each pack contains three NFTs engineered for our play‑to‑earn game. Compete, climb leaderboards, and win SOL or other crypto rewards.
+              Diamond Nutted Nation is a neon-charged collection designed for on-chain utility. Each pack contains three NFTs engineered for our play-to-earn game. Compete, climb leaderboards, and win SOL or other crypto rewards.
             </p>
           </article>
         </section>
@@ -98,7 +121,9 @@ const Index = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold">When will I see my NFTs?</h3>
-              <p className="text-muted-foreground">Immediately after mint, you’ll get a pack opening animation and a reveal. Final metadata will load in your wallet/marketplace shortly after confirmation.</p>
+              <p className="text-muted-foreground">
+                Immediately after mint, you’ll get a pack opening animation and a reveal. Final metadata will load in your wallet/marketplace shortly after confirmation.
+              </p>
             </div>
           </article>
         </section>
