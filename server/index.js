@@ -3,40 +3,56 @@ import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { Connection, Keypair, PublicKey, clusterApiUrl } from "@solana/web3.js";
 import { Metaplex, keypairIdentity } from "@metaplex-foundation/js";
 
+// Fix __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables
 dotenv.config();
 
-const PORT = Number(process.env.PORT) || 4000; // ensure integer
+const PORT = Number(process.env.PORT) || 4000;
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Load wallet keypair
-const keypairPath = path.resolve(process.env.WALLET_KEYPAIR_PATH || "./wallet/authority.json");
+// Wallet keypair path (absolute inside container)
+const keypairPath = path.resolve(
+  process.env.WALLET_KEYPAIR_PATH || path.join(__dirname, "wallet", "authority.json")
+);
+
 if (!fs.existsSync(keypairPath)) {
   console.error("❌ Wallet keypair not found at", keypairPath);
   process.exit(1);
 }
 
-const secretKeyString = fs.readFileSync(keypairPath, { encoding: "utf-8" });
-const secretKey = Uint8Array.from(JSON.parse(secretKeyString));
+// Load wallet
+const secretKeyString = fs.readFileSync(keypairPath, "utf-8");
+let secretKey;
+try {
+  secretKey = Uint8Array.from(JSON.parse(secretKeyString));
+} catch (err) {
+  console.error("❌ Invalid keypair file format");
+  process.exit(1);
+}
 const authorityKeypair = Keypair.fromSecretKey(secretKey);
 
-// Environment values
+// RPC & IDs
 const RPC_URL = process.env.RPC_URL || clusterApiUrl("devnet");
 const CANDY_MACHINE_ID = new PublicKey(process.env.CANDY_MACHINE_ID);
 const COLLECTION_UPDATE_AUTHORITY = new PublicKey(process.env.COLLECTION_UPDATE_AUTHORITY);
 
-// Metaplex client
+// Metaplex
 const connection = new Connection(RPC_URL, "confirmed");
 const metaplex = Metaplex.make(connection).use(keypairIdentity(authorityKeypair));
 
-// Simple auth middleware using API_SECRET
+// Middleware for API secret
 function requireApiSecret(req, res, next) {
-  const secret = req.headers["x-api-secret"] || req.query.secret || "";
   if (!process.env.API_SECRET) return next();
+  const secret = req.headers["x-api-secret"] || req.query.secret || "";
   if (secret !== process.env.API_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -46,12 +62,16 @@ function requireApiSecret(req, res, next) {
 // Routes
 app.get("/api/candy-machine", async (req, res) => {
   try {
-    const candyMachine = await metaplex.candyMachines().findByAddress({ address: CANDY_MACHINE_ID });
+    const candyMachine = await metaplex
+      .candyMachines()
+      .findByAddress({ address: CANDY_MACHINE_ID });
+
     const total = candyMachine.itemsAvailable ?? null;
     const minted = candyMachine.itemsMinted ?? null;
     const price = candyMachine.price?.basisPoints
       ? Number(candyMachine.price.basisPoints) / 1e9
       : null;
+
     return res.json({ price, totalSupply: total, minted });
   } catch (err) {
     console.error("❌ Failed to fetch candy machine:", err);
@@ -65,7 +85,10 @@ app.post("/api/mint", requireApiSecret, async (req, res) => {
     if (!walletAddress) return res.status(400).json({ error: "Missing walletAddress" });
     const buyer = new PublicKey(walletAddress);
 
-    const candyMachine = await metaplex.candyMachines().findByAddress({ address: CANDY_MACHINE_ID });
+    const candyMachine = await metaplex
+      .candyMachines()
+      .findByAddress({ address: CANDY_MACHINE_ID });
+
     const results = [];
 
     for (let i = 0; i < quantity; i++) {
