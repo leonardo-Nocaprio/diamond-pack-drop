@@ -8,7 +8,7 @@ import { Metaplex, keypairIdentity } from "@metaplex-foundation/js";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || 4000; // ensure integer
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -49,7 +49,9 @@ app.get("/api/candy-machine", async (req, res) => {
     const candyMachine = await metaplex.candyMachines().findByAddress({ address: CANDY_MACHINE_ID });
     const total = candyMachine.itemsAvailable ?? null;
     const minted = candyMachine.itemsMinted ?? null;
-    const price = candyMachine.price?.basisPoints ? (Number(candyMachine.price.basisPoints) / 1e9) : null;
+    const price = candyMachine.price?.basisPoints
+      ? Number(candyMachine.price.basisPoints) / 1e9
+      : null;
     return res.json({ price, totalSupply: total, minted });
   } catch (err) {
     console.error("❌ Failed to fetch candy machine:", err);
@@ -95,9 +97,7 @@ app.post("/api/mint", requireApiSecret, async (req, res) => {
   }
 });
 
-// Start server with Railway-friendly binding
-app.listen(PORT, () => {
+// Start server
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Mint server running on port ${PORT}`);
-}).on("error", (err) => {
-  console.error("❌ Server failed to start:", err);
 });
