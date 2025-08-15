@@ -18,6 +18,8 @@ const PORT = Number(process.env.PORT) || 4000;
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
 // Wallet keypair path (absolute inside container)
 const keypairPath = path.resolve(
