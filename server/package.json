@@ -4,13 +4,18 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "engines": {
+    "node": ">=20.18.0"
   },
   "dependencies": {
     "express": "^4.19.2",
     "cors": "^2.8.5",
     "@solana/web3.js": "^1.95.3",
-    "@metaplex-foundation/js": "^0.20.0"
+    "@metaplex-foundation/js": "^0.20.0",
+    "dotenv": "^16.4.5"
   }
 }
 
