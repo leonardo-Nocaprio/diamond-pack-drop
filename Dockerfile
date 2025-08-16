@@ -1,24 +1,23 @@
-# Use Node 18
-FROM node:18
+# Use Node.js 20 LTS
+FROM node:20-alpine
 
-# Set working directory inside container
-WORKDIR /app
+# Create app directory
+WORKDIR /usr/src/app
 
-# Copy package files for caching
+# Install dependencies first (layer caching)
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install --production
 
-# Copy all backend code
+# Copy app source
 COPY . .
 
-# Copy environment file if needed
-# (Uncomment if you keep a local .env you want in the container)
-# COPY .env .env
+# Expose the port
+EXPOSE 3000
 
-# Expose port from .env or default 4000
-EXPOSE 4000
+# Health check (calls /healthz)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:3000/healthz || exit 1
 
-# Start backend server
+# Run the server
 CMD ["node", "index.js"]
+
