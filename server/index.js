@@ -19,6 +19,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check endpoint (required for Railway)
+app.get("/healthz", (_req, res) => res.send("ok"));
+
+// Optional root endpoint
+app.get("/", (_req, res) => res.send("Server is running!"));
+
 // Wallet keypair path
 const keypairPath = path.resolve(
   process.env.WALLET_KEYPAIR_PATH || path.join(__dirname, "wallet", "authority.json")
@@ -93,7 +99,6 @@ app.post("/api/mint", requireApiSecret, async (req, res) => {
     const results = [];
 
     for (let i = 0; i < quantity; i++) {
-      // New mint format for Metaplex SDK v2
       const mintKeypair = Keypair.generate();
 
       const mintOut = await metaplex.candyMachines().mint({
@@ -125,7 +130,7 @@ app.post("/api/mint", requireApiSecret, async (req, res) => {
   }
 });
 
-// Start server (single listen)
+// Start server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Mint server running on port ${PORT}`);
 });
