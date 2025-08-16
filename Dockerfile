@@ -2,27 +2,22 @@
 FROM node:18
 
 # Set working directory
-WORKDIR /app
-
-# Copy package files (for caching)
-COPY server/package*.json ./server/
-
-# Install dependencies
 WORKDIR /app/server
+
+# Copy only package files first
+COPY server/package*.json ./
+
+# Install deps
 RUN npm install
 
-# Copy backend source
-COPY server/ /app/server/
+# Copy backend code
+COPY server/ .
 
-# Copy wallet keypair
+# Copy wallet
 COPY wallet/ /app/server/wallet/
 
-# Expose port
+# Railway sets PORT env automatically
 EXPOSE 4000
 
-# Start backend
-CMD ["node", "index.js"]
-
-
-
-
+# Start app
+CMD ["npm", "start"]
