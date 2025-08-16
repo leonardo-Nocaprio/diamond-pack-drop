@@ -2,18 +2,19 @@
 FROM node:18
 
 # Set working directory
+WORKDIR /app
+
+# Copy package files (for caching)
+COPY server/package*.json ./server/
+
+# Install dependencies
 WORKDIR /app/server
-
-# Copy only package files first (for caching)
-COPY server/package*.json ./
-
-# Install all deps (not just production — avoids build errors)
 RUN npm install
 
-# Copy backend code
-COPY server/ .
+# Copy backend source
+COPY server/ /app/server/
 
-# Copy wallet keypair into container
+# Copy wallet keypair
 COPY wallet/ /app/server/wallet/
 
 # Expose port
