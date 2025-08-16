@@ -1,25 +1,27 @@
-# Use Node.js 20 LTS
-FROM node:20-alpine
+# Use Node 18
+FROM node:18
 
-# Create app directory
-WORKDIR /usr/src/app
+# Set working directory
+WORKDIR /app/server
 
-# Install dependencies first (layer caching)
-COPY package*.json ./
-RUN npm install --production
+# Copy only package files first (for caching)
+COPY server/package*.json ./
 
-# Copy app source
-COPY . .
+# Install all deps (not just production — avoids build errors)
+RUN npm install
 
-# Expose the port
-EXPOSE 3000
+# Copy backend code
+COPY server/ .
 
-# Health check (calls /healthz)
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:3000/healthz || exit 1
+# Copy wallet keypair into container
+COPY wallet/ /app/server/wallet/
 
-# Run the server
+# Expose port
+EXPOSE 4000
+
+# Start backend
 CMD ["node", "index.js"]
+
 
 
 
