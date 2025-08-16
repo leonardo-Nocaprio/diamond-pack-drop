@@ -1,23 +1,28 @@
-# Use Node.js 20 LTS
+# Use Node 20 LTS (latest stable, compatible with Metaplex & Solana SDKs)
 FROM node:20-alpine
 
-# Create app directory
+# Install build tools (needed for native modules)
+RUN apk add --no-cache python3 g++ make git
+
+# Set working directory
 WORKDIR /usr/src/app
 
-# Install dependencies first (layer caching)
+# Copy package.json and package-lock.json first for caching
 COPY package*.json ./
+
+# Install dependencies (production only)
 RUN npm install --production
 
-# Copy app source
+# Copy app source code
 COPY . .
 
-# Expose the port
-EXPOSE 3000
+# Expose port (Railway will map dynamically via $PORT)
+EXPOSE 4000
 
-# Health check (calls /healthz)
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:3000/healthz || exit 1
+# Set environment variable for Railway dynamic port
+ENV PORT=4000
 
-# Run the server
+# Start the app
 CMD ["node", "index.js"]
+
 
