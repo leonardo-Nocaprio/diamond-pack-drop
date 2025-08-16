@@ -14,15 +14,16 @@ const __dirname = path.dirname(__filename);
 // Load environment variables
 dotenv.config();
 
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || 4000;
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Health check for Railway/Render/Docker
+
+// Health check (important for Docker/Vercel/Railway/etc.)
 app.get("/healthz", (_req, res) => res.send("ok"));
 
-// Wallet keypair path
+// Wallet keypair path (absolute inside container)
 const keypairPath = path.resolve(
   process.env.WALLET_KEYPAIR_PATH || path.join(__dirname, "wallet", "authority.json")
 );
@@ -32,23 +33,23 @@ if (!fs.existsSync(keypairPath)) {
   process.exit(1);
 }
 
-// Load wallet keypair
-let authorityKeypair;
+// Load wallet
+const secretKeyString = fs.readFileSync(keypairPath, "utf-8");
+let secretKey;
 try {
-  const secretKeyString = fs.readFileSync(keypairPath, "utf-8");
-  const secretKey = Uint8Array.from(JSON.parse(secretKeyString));
-  authorityKeypair = Keypair.fromSecretKey(secretKey);
+  secretKey = Uint8Array.from(JSON.parse(secretKeyString));
 } catch (err) {
-  console.error("❌ Failed to load keypair:", err.message);
+  console.error("❌ Invalid keypair file format");
   process.exit(1);
 }
+const authorityKeypair = Keypair.fromSecretKey(secretKey);
 
 // RPC & IDs
 const RPC_URL = process.env.RPC_URL || clusterApiUrl("devnet");
 const CANDY_MACHINE_ID = new PublicKey(process.env.CANDY_MACHINE_ID);
 const COLLECTION_UPDATE_AUTHORITY = new PublicKey(process.env.COLLECTION_UPDATE_AUTHORITY);
 
-// Metaplex setup
+// Metaplex
 const connection = new Connection(RPC_URL, "confirmed");
 const metaplex = Metaplex.make(connection).use(keypairIdentity(authorityKeypair));
 
@@ -62,8 +63,8 @@ function requireApiSecret(req, res, next) {
   next();
 }
 
-// GET candy machine info
-app.get("/api/candy-machine", async (_req, res) => {
+// Routes
+app.get("/api/candy-machine", async (req, res) => {
   try {
     const candyMachine = await metaplex
       .candyMachines()
@@ -75,20 +76,19 @@ app.get("/api/candy-machine", async (_req, res) => {
       ? Number(candyMachine.price.basisPoints) / 1e9
       : null;
 
-    res.json({ price, totalSupply: total, minted });
+    return res.json({ price, totalSupply: total, minted });
   } catch (err) {
     console.error("❌ Failed to fetch candy machine:", err);
-    res.status(500).json({ error: "Failed to fetch candy machine" });
+    return res.status(500).json({ error: "Failed to fetch candy machine" });
   }
 });
 
-// POST mint endpoint
 app.post("/api/mint", requireApiSecret, async (req, res) => {
   try {
     const { quantity = 1, walletAddress } = req.body;
     if (!walletAddress) return res.status(400).json({ error: "Missing walletAddress" });
-
     const buyer = new PublicKey(walletAddress);
+
     const candyMachine = await metaplex
       .candyMachines()
       .findByAddress({ address: CANDY_MACHINE_ID });
@@ -117,14 +117,14 @@ app.post("/api/mint", requireApiSecret, async (req, res) => {
       });
     }
 
-    res.json({ success: true, results });
+    return res.json({ success: true, results });
   } catch (err) {
     console.error("❌ Mint error:", err);
-    res.status(500).json({ error: err?.message || String(err) });
+    return res.status(500).json({ error: err?.message || String(err) });
   }
 });
 
-// ✅ Start server
+// Start server (only once!)
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Mint server running on port ${PORT}`);
 });
